@@ -11,7 +11,9 @@ except ImportError:
 if __version_info__ < (20, 0, 0, "alpha", 1):
     raise RuntimeError(f"This programme is not compatible with your current PTB version {TG_VER}.")
 
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update, InlineKeyboardMarkup, InlineKeyboardButton
+import requests
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update, \
+    InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -37,7 +39,6 @@ markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Start the conversation and ask user for input."""
     await update.message.reply_text(
         "Hi! This bot can help you to find information about owner of eth wallet"
         " Or to add information about your wallet to help other to find you",
@@ -72,25 +73,15 @@ async def regular_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                                                                    url="https://crypto-notes-ten.vercel.app/create")]]
                                             )
                                         )
+        await update.message.reply_text("Possible example of realization:",
+                                        reply_markup=InlineKeyboardMarkup(
+                                            [[InlineKeyboardButton("Example", web_app=WebAppInfo(
+                                                url="https://telegram-crypto-bot-mu.vercel.app/create"))]]
+                                        )
+                                        )
         await update.message.reply_text("Chose:", reply_markup=markup)
         return CHOOSING
 
-
-# async def received_information(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#     user_data = context.user_data
-#     text = update.message.text
-#     category = user_data["choice"]
-#     user_data[category] = text
-#     del user_data["choice"]
-#
-#     await update.message.reply_text(
-#         "Neat! Just so you know, this is what you already told me:"
-#         f"{facts_to_str(user_data)}You can tell me more, or change your opinion"
-#         " on something.",
-#         reply_markup=markup,
-#     )
-#
-#     return
 
 async def received_information(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_data = context.user_data
@@ -98,7 +89,20 @@ async def received_information(update: Update, context: ContextTypes.DEFAULT_TYP
     category = user_data["choice"]
     # del user_data["choice"]
     if category == "🔗 In blockchain notes":
-        pass
+        url = "https://telegram-crypto-bot-mu.vercel.app/api/adr"
+        data = {"adr": text}
+        response = requests.post(url, json=data).json()
+        if "error" not in response.keys():
+            print(response.keys())
+            await update.message.reply_text(f"There is note on address {text}! Here it is: {response['note']}",
+                                            reply_markup=InlineKeyboardMarkup(
+                                                [[InlineKeyboardButton("Check on etherscan!", url=response['url'])]]
+                                            ))
+            await update.message.reply_text("Chose:", reply_markup=markup)
+        else:
+            await update.message.reply_text("Note do not exist on this address", reply_markup=markup)
+        return CHOOSING
+
     elif category == "💿 Local notes":
         file = open("db.txt", "r")
         output = f"There is no note on address {text}."
