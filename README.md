@@ -43,4 +43,4 @@ npx hardhat run scripts/deploy.js --network goerli
 ## Contributors
 * [dgornin](https://github.com/dgornin)
 ## License
-React is [MIT licensed](./LICENSE).
+telegramCryptoBot is [MIT licensed](./LICENSE).
