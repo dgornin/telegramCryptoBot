@@ -15,11 +15,11 @@ pip install python-telegram-bot --pre
 ```
 Then to run bot you can use "python3" command
 ```bash
-python3 main.py
+python3 bot_main.py
 ```
 Or "nohup python3" to run it background on server
 ```bash
-nohup python3 main.py &
+nohup python3 bot_main.py &
 ```
 ### Front (Next.js) part
 You will need to install node js locally then go to front folder and run "npx install" it will install all dependencies that require to run server
